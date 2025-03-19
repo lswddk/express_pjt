@@ -1,5 +1,12 @@
 const express = require('express');
 const app = express();
+
+const cors = require('cors');
+app.use(cors());
+
+// json으로 된 post의 바디를 읽기 위해 필요요
+app.use(express.json())
+
 const PORT = 3000;
 
 
@@ -183,19 +190,51 @@ app.get('/test', (req, res) => {
   });
 
 
-app.get('/user/:id', (req, res)=>{
-
-    console.log(req.params.id)
-
-    let id = req.params.id;
-
-    let user_len = users.length
-
-    for(let i = 0; i < user_len ; i++){
-      if (users[i].id == id){
-        res.send(users[i])
-      }
-    }
-
-    res.send('ok')
+app.get('/articles', (req,res)=>{
+  console.log(req);
+  res.send(articles)
 })
+
+
+app.post('/articles', (req, res)=>{
+
+  let data = req.body
+  let lastId = articles[articles.length -1].id
+  data.id = lastId + 1
+
+  const now = new Date().toISOString().slice(0, 19) + 'Z';
+  data.date = now;
+
+  articles.push(data);
+  return res.json("ok")
+})
+
+app.delete('/articles/:id', (req, res) => {
+  const articleId = parseInt(req.params.id);  // URL 파라미터에서 게시글 ID를 가져옵니다.
+  const articleIndex = articles.findIndex(article => article.id === articleId);
+
+  if (articleIndex !== -1) {
+      articles.splice(articleIndex, 1);  // 게시글 배열에서 해당 게시글을 삭제합니다.
+      res.json({ message: "Article deleted successfully" });  // 삭제 성공 메시지
+  } else {
+      res.status(404).json({ error: "Article not found" });  // 게시글을 찾을 수 없는 경우 에러 메시지
+  }
+});
+
+app.get('/articles/:id', (req, res)=> {
+
+  let article_id = req.params.id
+
+  let article = articles[article_id-1]
+
+  for(let i = 0; i < articles.length ; i++){
+    if(articles[i].id == article_id){
+     return res.json(articles[i])  
+    }
+  }
+
+  res.json("없었습니다")
+})
+
+
+

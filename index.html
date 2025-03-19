@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 관리 시스템</title>
+    <style>
+        /* 기본 스타일 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f6fa;
+        }
+
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* 게시글 작성 폼 */
+        .post-form {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .post-form h2 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .post-form input, .post-form textarea {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .post-form button {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .post-form button:hover {
+            background-color: #218838;
+        }
+
+        /* 게시글 리스트 */
+        .article-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .article-item {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .article-item h3 {
+            font-size: 20px;
+            margin: 0 0 10px;
+            color: #333;
+        }
+
+        .article-item p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .article-item .author {
+            font-size: 14px;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        .article-item .date {
+            font-size: 14px;
+            color: #bbb;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+
+        /* 모바일 및 작은 화면 반응형 디자인 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .post-form {
+                padding: 20px;
+            }
+
+            .article-item {
+                padding: 15px;
+            }
+
+            .article-item h3 {
+                font-size: 18px;
+            }
+
+            .article-item p {
+                font-size: 14px;
+            }
+
+            .delete-button {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        게시글 관리 시스템
+    </header>
+
+    <div class="container">
+        <!-- 게시글 작성 폼 -->
+        <div class="post-form">
+            <h2>새 게시글 작성</h2>
+            <input type="text" id="title" placeholder="게시글 제목" required />
+            <textarea id="content" rows="4" placeholder="게시글 내용" required></textarea>
+            <button onclick="submitArticle()">게시글 작성</button>
+        </div>
+
+        <!-- 게시글 리스트 -->
+        <div id="articles-container">
+            <h2>게시글 리스트</h2>
+            <ul class="article-list" id="articles-list">
+                <!-- 게시글 항목이 동적으로 들어갑니다. -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 서버에서 게시글 데이터를 가져오는 함수
+        async function getArticles() {
+            try {
+                const response = await fetch('http://localhost:3000/articles');
+                const articles = await response.json();
+                
+                // 게시글을 최신 순으로 정렬 (작성일을 기준으로 내림차순)
+                articles.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                displayArticles(articles);
+            } catch (error) {
+                console.error('게시글을 가져오는 중 오류 발생:', error);
+            }
+        }
+
+        // 게시글 데이터를 화면에 표시하는 함수
+        function displayArticles(articles) {
+            const articlesList = document.getElementById('articles-list');
+            articlesList.innerHTML = ''; // 기존 게시글 초기화
+
+            articles.forEach((article) => {
+                const articleItem = document.createElement('li');
+                articleItem.classList.add('article-item');
+
+                articleItem.innerHTML = `
+                    <h3>${article.title}</h3>
+                    <p>${article.content}</p>
+                    <p class="author">작성자: ${article.author_id}</p>
+                    <p class="date">작성일: ${new Date(article.date).toLocaleString()}</p>
+                    <button class="delete-button" onclick="deleteArticle(${article.id})">삭제</button>
+                `;
+
+                articlesList.appendChild(articleItem);
+            });
+        }
+
+        // 게시글 작성 함수
+        async function submitArticle() {
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+
+            if (!title || !content) {
+                alert('제목과 내용을 입력해주세요.');
+                return;
+            }
+
+            const newArticle = {
+                title: title,
+                content: content,
+                author_id: 1,  // 작성자는 ID 1로 가정
+                date: new Date().toISOString(),
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/articles', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newArticle),
+                });
+
+                if (response.ok) {
+                    alert('게시글이 작성되었습니다!');
+                    getArticles();  // 게시글을 새로고침
+                    document.getElementById('title').value = '';  // 입력값 초기화
+                    document.getElementById('content').value = '';  // 입력값 초기화
+                } else {
+                    alert('게시글 작성에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('게시글 작성 중 오류 발생:', error);
+            }
+        }
+
+        // 게시글 삭제 함수
+        async function deleteArticle(articleId) {
+            try {
+                const response = await fetch(`http://localhost:3000/articles/${articleId}`, {
+                    method: 'DELETE',
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(result.message);  // 삭제 성공 메시지
+                    getArticles();  // 게시글을 새로고침
+                } else {
+                    alert(result.error);  // 삭제 실패 메시지
+                }
+            } catch (error) {
+                console.error('게시글 삭제 중 오류 발생:', error);
+            }
+        }
+
+        // 페이지 로드 시 게시글 리스트를 불러옴
+        window.onload = getArticles;
+    </script>
+</body>
+</html>
