@@ -209,17 +209,33 @@ app.post('/articles', (req, res)=>{
   return res.json("ok")
 })
 
-app.delete('/articles/:id', (req, res) => {
-  const articleId = parseInt(req.params.id);  // URL 파라미터에서 게시글 ID를 가져옵니다.
-  const articleIndex = articles.findIndex(article => article.id === articleId);
+app.put('/articles/:id', (req, res)=>{
+  let id = req.params.id -1
+  let data = req.body
+  console.log(data)
+  articles[id] = data
+  console.log(id)
+  res.send("ok")
+})
 
-  if (articleIndex !== -1) {
-      articles.splice(articleIndex, 1);  // 게시글 배열에서 해당 게시글을 삭제합니다.
-      res.json({ message: "Article deleted successfully" });  // 삭제 성공 메시지
-  } else {
-      res.status(404).json({ error: "Article not found" });  // 게시글을 찾을 수 없는 경우 에러 메시지
-  }
-});
+// app.delete('/articles/:id', (req, res) => {
+//   const articleId = parseInt(req.params.id);  // URL 파라미터에서 게시글 ID를 가져옵니다.
+//   const articleIndex = articles.findIndex(article => article.id === articleId);
+
+//   if (articleIndex !== -1) {
+//       articles.splice(articleIndex, 1);  // 게시글 배열에서 해당 게시글을 삭제합니다.
+//       res.json({ message: "Article deleted successfully" });  // 삭제 성공 메시지
+//   } else {
+//       res.status(404).json({ error: "Article not found" });  // 게시글을 찾을 수 없는 경우 에러 메시지
+//   }
+// });
+
+app.delete('/articels/:id', (req, res)=>{
+  let id = req.params.id
+  console.log(id);
+  articles.splice(id-1, 1);
+  res.send("ok")
+})
 
 app.get('/articles/:id', (req, res)=> {
 
