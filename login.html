@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인 페이지</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f9;
+    }
+    .login-container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+    .login-container h2 {
+      text-align: center;
+    }
+    .input-field {
+      margin-bottom: 15px;
+    }
+    .input-field input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .login-btn {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .login-btn:hover {
+      background-color: #45a049;
+    }
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>로그인</h2>
+    <div class="input-field">
+      <label for="email">이메일</label>
+      <input type="email" id="email" placeholder="이메일을 입력하세요" required>
+    </div>
+    <div class="input-field">
+      <label for="password">비밀번호</label>
+      <input type="password" id="password" placeholder="비밀번호를 입력하세요" required>
+    </div>
+    <button class="login-btn" onclick="login()">로그인</button>
+    <div class="error" id="error-message"></div>
+  </div>
+
+  <script>
+    function login() {
+      // 이메일과 비밀번호 값 가져오기
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      // 이메일과 비밀번호가 비어 있는지 체크
+      if (!email || !password) {
+        document.getElementById('error-message').innerText = '이메일과 비밀번호를 입력해주세요.';
+        return;
+      }
+
+      // 로그인 API 호출
+      fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.token) {
+          // 로그인 성공, 토큰을 로컬 스토리지에 저장
+          localStorage.setItem('jwt_token', data.token);
+          alert('로그인 성공! 토큰이 로컬 스토리지에 저장되었습니다.');
+          // 추가적인 동작이 필요하다면 여기에 추가 (예: 다른 페이지로 이동)
+        } else {
+          // 토큰이 없으면 로그인 실패
+          document.getElementById('error-message').innerText = data.error || '로그인 실패';
+        }
+      })
+      .catch(error => {
+        console.error('로그인 중 오류 발생:', error);
+        document.getElementById('error-message').innerText = '서버 오류로 로그인에 실패했습니다.';
+      });
+    }
+  </script>
+</body>
+</html>
