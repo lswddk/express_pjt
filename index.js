@@ -94,12 +94,12 @@ app.get('/articles/:id', (req, res) => {
   });
 });
 
-db.all(query, [articleId], (err, rows) => {
-  if (err) {
-    return res.status(500).json({ error: err.message });
-  }
-  res.json(rows);  // 반환되는 결과에 댓글 작성자의 이메일이 포함됩니다.
-});
+// db.all(query, [articleId], (err, rows) => {
+//   if (err) {
+//     return res.status(500).json({ error: err.message });
+//   }
+//   res.json(rows);  // 반환되는 결과에 댓글 작성자의 이메일이 포함됩니다.
+// });
 
 
 app.delete("/articles/:id", (req, res) => {
